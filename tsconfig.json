@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "es6",
+    "moduleResolution": "node",
+    "outDir": "./out/",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "lib": [
+    "esnext",
+    "dom",
+    "dom.iterable"
+  ],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "out",
+    "node_modules"
+  ]
+}

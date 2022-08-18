@@ -1,0 +1,108 @@
+html {
+  font-size: 1.8rem;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.slide-holder {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.srini-face {
+  max-width: 15%;
+  
+  animation-name: spin;
+  animation-duration: 5000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.loading-message {
+  font-size: 2.4rem;
+  font-weight: bold;
+}
+
+.next-button {
+  width: 25%;
+  margin: 1rem auto;
+}
+
+.pass-button {
+  margin: 1rem 0;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  align-items: center;
+  overflow: hidden;
+}
+
+#button-container {
+  margin-bottom: 1rem;
+  flex: 1;
+  width: 100%;
+  min-height: 3rem;
+}
+
+#button-container button {
+  padding: 0.5rem 1.25rem;
+}
+
+#board-container {
+  flex: 16;
+  width: 100%;
+}
+
+#keyboard-container {
+  flex: 3;
+  width: 100%;
+}
+
+@keyframes spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
+  }
+}
+
+.is-invisible {
+  visibility: hidden;
+}
+
+#message-card-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.success-message {
+  border: 3px solid #0F0 !important;
+}
+
+.error-message {
+  border: 3px solid #F00 !important;
+}
+
+#srordle-title {
+  margin: 0;
+}
