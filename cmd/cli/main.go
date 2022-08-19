@@ -42,7 +42,7 @@ func (p *PopulateCmd) Run(ctx *Context) error {
 	r := rand.New(rand.NewSource(0))
 	order := r.Perm(len(words))
 
-	dt := db.ToDate(time.Now())
+	dt := db.ToDate(time.Now().AddDate(0, 0, -1))
 	for _, idx := range order {
 		err = bdb.AddGame(dt, &srordle.Game{
 			TargetWord:   words[idx],
@@ -52,6 +52,7 @@ func (p *PopulateCmd) Run(ctx *Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to create game: %w", err)
 		}
+		dt = dt.AddDays(1)
 	}
 
 	if err := sc.Err(); err != nil {

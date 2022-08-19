@@ -84,7 +84,7 @@ clean:
 > rm -f $(js_targets)
 .PHONY: clean
 
-.make/docker-build: $(js_targets)
+.make/docker-build: $(js_targets) Dockerfile
 > docker build --tag docker.bsprague.com/srordle-open .
 > @mkdir -p .make
 > @touch .make/docker-build

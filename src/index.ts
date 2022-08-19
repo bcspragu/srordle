@@ -68,7 +68,7 @@ const showMessage = (headerMsg: string, msg: string, opts?: ShowMessageOptions) 
   }
   const container = getElement('message-card-container')
   const card = getElement('message-card')
-  const header = queryEl(card, 'header h3')
+  const header = queryEl(card, 'header h1')
   const body = queryEl(card, 'p')
   header.textContent = headerMsg
   body.textContent = msg
@@ -86,7 +86,7 @@ const showError = (msg: string) => {
 }
 
 const showWin = () => {
-  showMessage('You\'ve won!', 'Congratulations! If this is a practice round, ignore this part. If this was a real game, go to /prize to claim your prize.', { class: 'success-message' })
+  showMessage('You\'ve won!', 'Congratulations!', { class: 'success-message' })
 }
 
 const showLose = (targetWord?: string) => {
@@ -94,7 +94,7 @@ const showLose = (targetWord?: string) => {
   if (targetWord) {
     showMessage(`You've lost, the word was ${targetWord.toUpperCase()}`, 'Womp womp. If this isn\'t your last legit run, refresh the page to play again.', opts)
   } else {
-    showMessage('You\'ve lost.', 'Womp womp. If you aren\'t out of attempts, refresh the page to play again.', opts)
+    showMessage('You\'ve lost.', 'Womp womp.', opts)
   }
 }
 
@@ -107,6 +107,8 @@ class Game {
   private pastGuesses: SrordleAnswer[] = []
   private currentRequestedFull = false
   private remainingFullAttempts = 0
+  private totalFullAttempts = 0
+  private gameOver = false
   private submitGuessCallback?: (answers: SrordleAnswer[]) => void | undefined
   private requestCountChangeCallback?: (n: number) => void | undefined
 
@@ -116,13 +118,14 @@ class Game {
     this.gd = gd
   }
 
-  public start(shape: Shape, pastGuesses: SrordleAnswer[], remainingFullAttempts: number): void {
+  public start(shape: Shape, pastGuesses: SrordleAnswer[], remainingFullAttempts: number, totalFullAttempts: number): void {
     this.kb.onDeleteLetter(() => this.deleteLetter())
     this.kb.onSubmitGuess(() => this.submitGuess())
     this.kb.onAddLetter((l: string) => this.addLetter(l))
 
     this.shape = shape
     this.remainingFullAttempts = remainingFullAttempts
+    this.totalFullAttempts = totalFullAttempts
     this.pastGuesses = [...pastGuesses]
     this.board.setGameShape(shape)
     this.board.setPastGuesses([...pastGuesses])
@@ -203,7 +206,7 @@ class Game {
   }
 
   private addLetter(letter: string): void {
-    if (this.currentGuess.length >= this.currentRowLength()) {
+    if (this.currentGuess.length >= this.currentRowLength() || this.gameOver) {
       return
     }
     this.currentGuess.push(letter)
@@ -211,6 +214,9 @@ class Game {
   }
 
   private deleteLetter(): void {
+    if (this.gameOver) {
+      return
+    }
     this.currentGuess.pop()
     this.board.updateCurrentGuess(this.currentGuess)
   }
@@ -225,14 +231,18 @@ class Game {
     }
     return cnt
   }
-
+  
   private submitGuess(): void {
+    if (this.gameOver) {
+      return
+    }
     const useFull = this.currentRequestedFull
+    const guessIndex = this.nonRequestedFullCount()
     const req = {
       guess: this.currentGuess.join(''),
       tzOffset: this.gd.getTZOffset(),
-      useFull: useFull,
-      guessIndex: this.nonRequestedFullCount(),
+      useFull,
+      guessIndex,
     }
 
     fetch('/api/guess', {
@@ -258,24 +268,26 @@ class Game {
             this.submitGuessCallback(this.pastGuesses)
           }
         }
-        if (data.Won) {
-          showWin()
-          return
-        }
-        if (data.Lost) {
-          showLose(data.TargetWord)
-          return
-        }
 
         this.currentRequestedFull = false
-        if (data.RemainingFullAttempts) {
-          this.remainingFullAttempts = data.RemainingFullAttempts
+        this.currentGuess = []
+        this.board.updateCurrentGuess([])
+        if (useFull || (this.shape && guessIndex >= this.shape.length)) {
           if (this.requestCountChangeCallback) {
             this.requestCountChangeCallback(this.remainingFullAttempts)
           }
         }
-        this.currentGuess = []
-        this.board.updateCurrentGuess([])
+
+        if (data.Won) {
+          this.gameOver = true
+          showWin()
+          return
+        }
+        if ((this.shape && this.pastGuesses.length >= (this.shape.length + this.totalFullAttempts)) || this.remainingFullAttempts === 0) {
+          this.gameOver = true
+          showLose('')
+          return
+        }
       })
   }
 }
@@ -390,7 +402,7 @@ const initGame = (fd: FetchData) => {
     saveRemainingFullAttempts(gd, reqCount)
   })
 
-  game.start(sr.Game.Shape, pastGuesses, loadRemainingFullAttempts(gd, sr.Game.FullAttempts))
+  game.start(sr.Game.Shape, pastGuesses, loadRemainingFullAttempts(gd, sr.Game.FullAttempts), sr.Game.FullAttempts)
   if (game.currentRowLength() === WORD_LENGTH) {
     reqBtn.disabled = true
   }

@@ -30,4 +30,4 @@ RUN mkdir /data
 COPY wordlists/dict.txt /data
 COPY wordlists/target.txt /data
 
-CMD ["/app/server", "--local=false", "--dictionary_path=/data/dict.txt", "--target_words_path=/data/target.txt", "--db_dir=/database/"]
+CMD ["/app/server", "--local=false", "--dictionary_path=/data/dict.txt", "--target_words_path=/data/target.txt", "--db_dir=/database"]
